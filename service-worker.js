@@ -68,6 +68,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'UPDATE_NOTIFICATION') {
     const options = {
+      title : 'move',
       body: event.data.message,
       icon: '/icon.png',
       tag: 'persistent-notification',
