@@ -1,12 +1,12 @@
 const CACHE_NAME = 'movement-detector-cache-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-  '/styles.css', // if you have a separate CSS file
-  '/script.js'   // if you have a separate JS file
+  '/test',
+  '/test/index.html',
+  '/test/manifest.json',
+  '/test/icons/icon-192x192.png',
+  '/test/icons/icon-512x512.png',
+  
+  '/test/script.js'   // if you have a separate JS file
 ];
 
 // Install event
@@ -32,7 +32,7 @@ self.addEventListener('push', (event) => {
   const data = event.data.json();
   const options = {
     body: data.message,
-    icon: '/icons/icon-192x192.png'
+   
   };
   event.waitUntil(
     self.registration.showNotification(data.title, options)
