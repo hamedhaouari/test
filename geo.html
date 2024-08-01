@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geolocation Distance Moved with Leaflet</title>
-   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <title>Geolocation Total Distance Traveled with Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,7 +12,7 @@
             margin: 0;
         }
         #map {
-            height: 400px;
+            height: 500px; /* Increased height for better visibility */
             width: 100%;
             margin-top: 20px;
         }
@@ -24,12 +23,12 @@
     </style>
 </head>
 <body>
-    <h1>Track Distance Moved and Show Location on Map</h1>
+    <h1>Track Total Distance Traveled and Show Location on Map</h1>
     <p id="status">Waiting for geolocation data...</p>
-    <div id="distance">Distance moved: 0 meters</div>
+    <div id="distance">Total distance traveled: 0 meters</div>
     <div id="map"></div>
 
- 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         const statusElement = document.getElementById('status');
         const distanceElement = document.getElementById('distance');
@@ -38,9 +37,10 @@
         let map;
         let marker;
         let lastPosition = null;
+        let totalDistance = 0;
 
         function initMap() {
-            map = L.map(mapElement).setView([0, 0], 15);
+            map = L.map(mapElement).setView([0, 0], 18); // Increased initial zoom level
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
@@ -74,12 +74,13 @@
 
             if (lastPosition) {
                 const distance = haversineDistance(lastPosition, currentPosition);
-                distanceElement.textContent = `Distance moved: ${distance.toFixed(2)} meters`;
+                totalDistance += distance; // Accumulate total distance
+                distanceElement.textContent = `Total distance traveled: ${totalDistance.toFixed(2)} meters`;
             }
 
             // Update marker and map center
             marker.setLatLng([currentPosition.latitude, currentPosition.longitude]);
-            map.setView([currentPosition.latitude, currentPosition.longitude], 15);
+            map.setView([currentPosition.latitude, currentPosition.longitude], 18); // Maintain high zoom level
 
             lastPosition = currentPosition;
         }
