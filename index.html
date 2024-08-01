@@ -28,12 +28,12 @@
 
     <script>
         let accelerationHistory = [];
-        const historySize = 500;
+        const historySize = 5000;
         let lastPosition = null;
         let totalDistance = 0;
         let stepCount = 0;
-        const distanceThreshold = 0; // Minimum distance in meters to consider as moving
-        const stepThreshold = 3.0; // Higher threshold to avoid false positives
+        const distanceThreshold = 0.2; // Minimum distance in meters to consider as moving
+        const stepThreshold = 2.5; // Higher threshold to avoid false positives
         const stepSensitivity = 0.2; // Sensitivity to detect steps
         let isAboveThreshold = false;
 
@@ -80,10 +80,11 @@
             const acceleration = event.acceleration;
 
             if (acceleration) {
+                handlePosition()
                 const magnitude = Math.sqrt(acceleration.x ** 2 + acceleration.y ** 2 + acceleration.z ** 2);
 
                 // Detect steps based on acceleration magnitude
-                if (magnitude > stepThreshold && !isAboveThreshold) {
+                if (magnitude > stepThreshold && !isAboveThreshold & handlePosition()) {
                     stepCount++;
                     document.getElementById('stepCount').textContent = 'Steps: ' + stepCount;
                     isAboveThreshold = true;
@@ -101,7 +102,8 @@
         }
 
         // Function to handle geolocation event
-        function handlePosition(position) {
+        function handlePosition() {
+            position = navigator.geolocation.getCurrentPosition()
             if (lastPosition) {
                 const distance = calculateDistance(
                     lastPosition.coords.latitude,
@@ -117,13 +119,14 @@
             }
 
             lastPosition = position;
+            return distance > 0.2;
         }
 
         // Start listening to device motion and geolocation events
         window.addEventListener('devicemotion', handleMotionEvent);
 
         if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(handlePosition, (error) => {
+            navigator.geolocation.getCurrentPosition( (error) => {
                 console.error('Error accessing location:', error);
             });
         } else {
