@@ -3,19 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movement Detector with GPS</title>
+    <title>Movement Detector with GPS and Step Counter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+        }
+        p {
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Movement Detector with GPS</h1>
-    <p id="movementType">Movement: None</p>
-    <p id="distanceMoved">Distance Moved: 0 meters</p>
+    <div id="container">
+        <h1>Movement Detector with GPS and Step Counter</h1>
+        <p id="movementType">Movement: None</p>
+        <p id="distanceMoved">Distance Moved: 0 meters</p>
+        <p id="stepCount">Steps: 0</p>
+    </div>
 
     <script>
         let accelerationHistory = [];
         const historySize = 50;
         let lastPosition = null;
         let totalDistance = 0;
+        let stepCount = 0;
         const distanceThreshold = 10; // Minimum distance in meters to consider as moving
+        const stepThreshold = 1.2; // Adjust based on experimentation
+        let isAboveThreshold = false;
 
         // Function to calculate distance between two GPS coordinates
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -55,12 +74,21 @@
             document.getElementById('movementType').textContent = 'Movement: ' + movementType;
         }
 
-        // Function to handle device motion event
+        // Function to handle device motion event and detect steps
         function handleMotionEvent(event) {
             const acceleration = event.acceleration;
 
             if (acceleration) {
                 const magnitude = Math.sqrt(acceleration.x ** 2 + acceleration.y ** 2 + acceleration.z ** 2);
+
+                // Detect steps based on acceleration magnitude
+                if (magnitude > stepThreshold && !isAboveThreshold) {
+                    stepCount++;
+                    document.getElementById('stepCount').textContent = 'Steps: ' + stepCount;
+                    isAboveThreshold = true;
+                } else if (magnitude < stepThreshold) {
+                    isAboveThreshold = false;
+                }
 
                 accelerationHistory.push(magnitude);
                 if (accelerationHistory.length > historySize) {
