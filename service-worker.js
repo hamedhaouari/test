@@ -28,7 +28,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 // Push event for notifications
-self.addEventListener('push', (event) => {
+self.addEventListener('push1', (event) => {
   const data = event.data.json();
   const options = {
     body: data.message,
@@ -38,3 +38,30 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(data.title, options)
   );
 });
+// Create a notification with a unique tag
+function showPersistentNotification(title, options) {
+  self.registration.showNotification(title, options);
+}
+
+// Update notification with new content
+function updateNotification(notificationId, options) {
+  self.registration.getNotifications({ tag: notificationId }).then((notifications) => {
+    if (notifications.length > 0) {
+      notifications[0].close(); // Close the existing notification
+    }
+    self.registration.showNotification(options.title, options);
+  });
+}
+
+// Handle push event or any other event to show or update notifications
+self.addEventListener('push', (event) => {
+  const data = event.data.json();
+  const options = {
+    body: data.message,
+    icon: 'icon.png',
+    tag: 'persistent-notification', // Unique tag for the notification
+    renotify: true, // Allow updating the notification
+  };
+  updateNotification('persistent-notification', options);
+});
+
