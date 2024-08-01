@@ -15,7 +15,7 @@ function showNotification(title, message) {
     navigator.serviceWorker.ready.then((registration) => {
       registration.showNotification(title, {
         body: message,
-        icon: '/icons/icon-192x192.png'
+        icon: 'icon.png'
       });
     });
   }
