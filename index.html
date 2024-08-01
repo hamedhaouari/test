@@ -16,11 +16,32 @@
         p {
             font-size: 18px;
         }
+        label, input {
+            display: block;
+            margin: 10px auto;
+            width: 80%;
+        }
+        input {
+            width: 60%;
+        }
     </style>
 </head>
 <body>
     <div id="container">
         <h1>Movement Detector with GPS and Step Counter</h1>
+        
+        <div>
+            <h2>Configuration</h2>
+            <label for="distanceThreshold">Distance Threshold (meters):</label>
+            <input type="number" id="distanceThreshold" value="0" step="0.1" />
+
+            <label for="stepThreshold">Step Threshold:</label>
+            <input type="number" id="stepThreshold" value="2.8" step="0.1" />
+
+            <label for="stepSensitivity">Step Sensitivity:</label>
+            <input type="number" id="stepSensitivity" value="0.1" step="0.01" />
+        </div>
+
         <p id="movementType">Movement: None</p>
         <p id="distanceMoved">Distance Moved: 0 meters</p>
         <p id="stepCount">Steps: 0</p>
@@ -32,9 +53,9 @@
         let lastPosition = null;
         let totalDistance = 0;
         let stepCount = 0;
-        const distanceThreshold = 0; // Minimum distance in meters to consider as moving
-        const stepThreshold = 5.0; // Higher threshold to avoid false positives
-        const stepSensitivity = 0.1; // Sensitivity to detect steps
+        let distanceThreshold = 0;
+        let stepThreshold = 2.8;
+        let stepSensitivity = 0.1;
         let isAboveThreshold = false;
 
         // Function to calculate distance between two GPS coordinates
@@ -118,6 +139,18 @@
 
             lastPosition = position;
         }
+
+        // Function to update parameters from UI
+        function updateParameters() {
+            distanceThreshold = parseFloat(document.getElementById('distanceThreshold').value);
+            stepThreshold = parseFloat(document.getElementById('stepThreshold').value);
+            stepSensitivity = parseFloat(document.getElementById('stepSensitivity').value);
+        }
+
+        // Event listeners for parameter updates
+        document.getElementById('distanceThreshold').addEventListener('input', updateParameters);
+        document.getElementById('stepThreshold').addEventListener('input', updateParameters);
+        document.getElementById('stepSensitivity').addEventListener('input', updateParameters);
 
         // Start listening to device motion and geolocation events
         window.addEventListener('devicemotion', handleMotionEvent);
