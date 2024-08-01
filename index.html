@@ -32,12 +32,11 @@
         let lastPosition = null;
         let totalDistance = 0;
         let stepCount = 0;
-        const distanceThreshold = 0.2; // Minimum distance in meters to consider as moving
-        const stepThreshold = 0; // Higher threshold to avoid false positives
+        const distanceThreshold = 0; // Minimum distance in meters to consider as moving
+        const stepThreshold = 5.0; // Higher threshold to avoid false positives
         const stepSensitivity = 0.1; // Sensitivity to detect steps
         let isAboveThreshold = false;
-        let acc = false;
-        
+
         // Function to calculate distance between two GPS coordinates
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3; // Earth radius in meters
@@ -79,34 +78,12 @@
         // Function to handle device motion event and detect steps
         function handleMotionEvent(event) {
             const acceleration = event.acceleration;
-            acc = acceleration;
+
             if (acceleration) {
-                navigator.geolocation.getCurrentPosition(handlePosition, (error) =>{
-                    statusElement.textContent = 'Error getting location: ' + error.message;
-                    }, {
-                    enableHighAccuracy: true
-                });
-                
-            }
-        }
-
-        // Function to handle geolocation event
-        function handlePosition(position) {
-             const acceleration = acc
-            if (lastPosition) {
-                const distance = calculateDistance(
-                    lastPosition.coords.latitude,
-                    lastPosition.coords.longitude,
-                    position.coords.latitude,
-                    position.coords.longitude
-                );
-
-                if (distance > distanceThreshold) {
-                    totalDistance += distance;
-                    const magnitude = Math.sqrt(acceleration.x ** 2 + acceleration.y ** 2 + acceleration.z ** 2);
+                const magnitude = Math.sqrt(acceleration.x ** 2 + acceleration.y ** 2 + acceleration.z ** 2);
 
                 // Detect steps based on acceleration magnitude
-                if (magnitude > stepThreshold && !isAboveThreshold ) {
+                if (magnitude > stepThreshold && !isAboveThreshold) {
                     stepCount++;
                     document.getElementById('stepCount').textContent = 'Steps: ' + stepCount;
                     isAboveThreshold = true;
@@ -120,19 +97,35 @@
                 }
 
                 analyzeMovement(accelerationHistory);
+            }
+        }
+
+        // Function to handle geolocation event
+        function handlePosition(position) {
+            if (lastPosition) {
+                const distance = calculateDistance(
+                    lastPosition.coords.latitude,
+                    lastPosition.coords.longitude,
+                    position.coords.latitude,
+                    position.coords.longitude
+                );
+
+                if (distance > distanceThreshold) {
+                    totalDistance += distance;
                     document.getElementById('distanceMoved').textContent = 'Distance Moved: ' + totalDistance.toFixed(2) + ' meters';
                 }
             }
 
             lastPosition = position;
-            
         }
 
         // Start listening to device motion and geolocation events
         window.addEventListener('devicemotion', handleMotionEvent);
 
         if (navigator.geolocation) {
-            
+            navigator.geolocation.watchPosition(handlePosition, (error) => {
+                console.error('Error accessing location:', error);
+            });
         } else {
             console.log('Geolocation is not supported by this browser.');
         }
