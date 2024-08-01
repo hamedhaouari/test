@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geolocation Total Distance Traveled with Leaflet</title>
+    <title>Geolocation and Motion Tracking with Leaflet</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
         body {
@@ -20,27 +20,38 @@
             margin-top: 20px;
             font-size: 20px;
         }
+        #steps {
+            margin-top: 10px;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>Track Total Distance Traveled and Show Location on Map</h1>
+    <h1>Track Total Distance Traveled and Estimate Steps with Leaflet</h1>
     <p id="status">Waiting for geolocation data...</p>
     <div id="distance">Total distance traveled: 0 meters</div>
+    <div id="steps">Estimated steps: 0 steps</div>
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         const statusElement = document.getElementById('status');
         const distanceElement = document.getElementById('distance');
+        const stepsElement = document.getElementById('steps');
         const mapElement = document.getElementById('map');
 
         let map;
         let marker;
         let lastPosition = null;
         let totalDistance = 0;
+        let totalSteps = 0;
+
+        // Motion detection parameters
+        let lastAccel = { x: 0, y: 0, z: 0 };
+        const stepThreshold = 10; // Adjust this threshold based on testing
 
         function initMap() {
-            map = L.map(mapElement).setView([0, 0], 18); // Increased initial zoom level
+            map = L.map(mapElement).setView([0, 0], 18); // Initial zoom level
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
@@ -85,6 +96,26 @@
             lastPosition = currentPosition;
         }
 
+        function detectMotion(event) {
+            const accel = event.acceleration;
+            if (accel) {
+                const deltaX = accel.x - lastAccel.x;
+                const deltaY = accel.y - lastAccel.y;
+                const deltaZ = accel.z - lastAccel.z;
+
+                // Calculate the magnitude of acceleration
+                const magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+
+                if (magnitude > stepThreshold) {
+                    totalSteps += 1; // Increment step count
+                    stepsElement.textContent = `Estimated steps: ${totalSteps}`;
+                }
+
+                // Update last acceleration
+                lastAccel = { x: accel.x, y: accel.y, z: accel.z };
+            }
+        }
+
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(
                 (position) => {
@@ -103,6 +134,12 @@
             );
         } else {
             statusElement.textContent = 'Geolocation is not supported by this browser.';
+        }
+
+        if (window.DeviceMotionEvent) {
+            window.addEventListener('devicemotion', detectMotion, true);
+        } else {
+            stepsElement.textContent = 'Device Motion API is not supported by this browser.';
         }
     </script>
 </body>
