@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movement Detector with GPS</title>
+</head>
+<body>
+    <h1>Movement Detector with GPS</h1>
+    <p id="movementType">Movement: None</p>
+    <p id="distanceMoved">Distance Moved: 0 meters</p>
+
+    <script>
+        let accelerationHistory = [];
+        const historySize = 50;
+        let lastPosition = null;
+        let totalDistance = 0;
+        const distanceThreshold = 10; // Minimum distance in meters to consider as moving
+
+        // Function to calculate distance between two GPS coordinates
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Earth radius in meters
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // Distance in meters
+        }
+
+        // Function to analyze movement type based on acceleration history
+        function analyzeMovement(history) {
+            if (history.length < historySize) return;
+
+            const mean = history.reduce((sum, value) => sum + value, 0) / history.length;
+            const variance = history.reduce((sum, value) => sum + (value - mean) ** 2, 0) / history.length;
+            const standardDeviation = Math.sqrt(variance);
+
+            let movementType = 'Unknown';
+            if (standardDeviation < 0.1) {
+                movementType = 'Stationary';
+            } else if (standardDeviation < 0.5) {
+                movementType = 'Walking';
+            } else if (standardDeviation < 1.0) {
+                movementType = 'Running';
+            } else {
+                movementType = 'Cycling or Other';
+            }
+
+            document.getElementById('movementType').textContent = 'Movement: ' + movementType;
+        }
+
+        // Function to handle device motion event
+        function handleMotionEvent(event) {
+            const acceleration = event.acceleration;
+
+            if (acceleration) {
+                const magnitude = Math.sqrt(acceleration.x ** 2 + acceleration.y ** 2 + acceleration.z ** 2);
+
+                accelerationHistory.push(magnitude);
+                if (accelerationHistory.length > historySize) {
+                    accelerationHistory.shift(); // Remove the oldest data point
+                }
+
+                analyzeMovement(accelerationHistory);
+            }
+        }
+
+        // Function to handle geolocation event
+        function handlePosition(position) {
+            if (lastPosition) {
+                const distance = calculateDistance(
+                    lastPosition.coords.latitude,
+                    lastPosition.coords.longitude,
+                    position.coords.latitude,
+                    position.coords.longitude
+                );
+
+                if (distance > distanceThreshold) {
+                    totalDistance += distance;
+                    document.getElementById('distanceMoved').textContent = 'Distance Moved: ' + totalDistance.toFixed(2) + ' meters';
+                }
+            }
+
+            lastPosition = position;
+        }
+
+        // Start listening to device motion and geolocation events
+        window.addEventListener('devicemotion', handleMotionEvent);
+
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(handlePosition, (error) => {
+                console.error('Error accessing location:', error);
+            });
+        } else {
+            console.log('Geolocation is not supported by this browser.');
+        }
+    </script>
+</body>
+</html>
