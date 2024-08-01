@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation Distance Moved with Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-4s9dIwyfGi7w5r+EN3l+6U3Zy2vNGC/gICCln2n+1Lg=" crossorigin=""/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        #distance {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Track Distance Moved and Show Location on Map</h1>
+    <p id="status">Waiting for geolocation data...</p>
+    <div id="distance">Distance moved: 0 meters</div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-hcE6s5lqzwbRRt4gl8kE0M8lc2fhRX9qJX1m7QdA4xQ=" crossorigin=""></script>
+    <script>
+        const statusElement = document.getElementById('status');
+        const distanceElement = document.getElementById('distance');
+        const mapElement = document.getElementById('map');
+
+        let map;
+        let marker;
+        let lastPosition = null;
+
+        function initMap() {
+            map = L.map(mapElement).setView([0, 0], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            marker = L.marker([0, 0]).addTo(map);
+        }
+
+        function haversineDistance(coords1, coords2) {
+            const toRad = (value) => value * Math.PI / 180;
+
+            const R = 6371000; // Radius of the Earth in meters
+            const dLat = toRad(coords2.latitude - coords1.latitude);
+            const dLon = toRad(coords2.longitude - coords1.longitude);
+            const lat1 = toRad(coords1.latitude);
+            const lat2 = toRad(coords2.latitude);
+
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2) *
+                      Math.cos(lat1) * Math.cos(lat2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // Distance in meters
+        }
+
+        function updatePosition(position) {
+            const currentPosition = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            };
+
+            if (lastPosition) {
+                const distance = haversineDistance(lastPosition, currentPosition);
+                distanceElement.textContent = `Distance moved: ${distance.toFixed(2)} meters`;
+            }
+
+            // Update marker and map center
+            marker.setLatLng([currentPosition.latitude, currentPosition.longitude]);
+            map.setView([currentPosition.latitude, currentPosition.longitude], 15);
+
+            lastPosition = currentPosition;
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    statusElement.textContent = 'Geolocation data received.';
+                    if (!map) {
+                        initMap();
+                    }
+                    updatePosition(position);
+                },
+                (error) => {
+                    statusElement.textContent = 'Error getting position: ' + error.message;
+                },
+                {
+                    enableHighAccuracy: true
+                }
+            );
+        } else {
+            statusElement.textContent = 'Geolocation is not supported by this browser.';
+        }
+    </script>
+</body>
+</html>
