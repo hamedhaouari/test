@@ -64,4 +64,16 @@ self.addEventListener('push', (event) => {
   };
   updateNotification('persistent-notification', options);
 });
+// Listen for messages from the main script
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'UPDATE_NOTIFICATION') {
+    const options = {
+      body: event.data.message,
+      icon: '/icon.png',
+      tag: 'persistent-notification',
+      renotify: true
+    };
+    updateNotification('persistent-notification', options);
+  }
+});
 
