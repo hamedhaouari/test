@@ -28,13 +28,13 @@
 
     <script>
         let accelerationHistory = [];
-        const historySize = 50;
+        const historySize = 500;
         let lastPosition = null;
         let totalDistance = 0;
         let stepCount = 0;
         const distanceThreshold = 1; // Minimum distance in meters to consider as moving
-        const stepThreshold = 5.0; // Higher threshold to avoid false positives
-        const stepSensitivity = 0.1; // Sensitivity to detect steps
+        const stepThreshold = 3.0; // Higher threshold to avoid false positives
+        const stepSensitivity = 0.5; // Sensitivity to detect steps
         let isAboveThreshold = false;
 
         // Function to calculate distance between two GPS coordinates
