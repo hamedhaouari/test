@@ -3,8 +3,7 @@ const urlsToCache = [
   '/test',
   '/test/index.html',
   '/test/manifest.json',
-  '/test/icons/icon-192x192.png',
-  '/test/icons/icon-512x512.png',
+  
   
   '/test/script.js'   // if you have a separate JS file
 ];
