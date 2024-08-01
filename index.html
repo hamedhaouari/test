@@ -32,8 +32,9 @@
         let lastPosition = null;
         let totalDistance = 0;
         let stepCount = 0;
-        const distanceThreshold = 10; // Minimum distance in meters to consider as moving
-        const stepThreshold = 1.2; // Adjust based on experimentation
+        const distanceThreshold = 5; // Minimum distance in meters to consider as moving
+        const stepThreshold = 2.0; // Higher threshold to avoid false positives
+        const stepSensitivity = 0.1; // Sensitivity to detect steps
         let isAboveThreshold = false;
 
         // Function to calculate distance between two GPS coordinates
@@ -61,11 +62,11 @@
             const standardDeviation = Math.sqrt(variance);
 
             let movementType = 'Unknown';
-            if (standardDeviation < 0.1) {
+            if (standardDeviation < 0.2) { // Increased threshold to reduce sensitivity
                 movementType = 'Stationary';
-            } else if (standardDeviation < 0.5) {
+            } else if (standardDeviation < 0.6) { // Adjusted for walking
                 movementType = 'Walking';
-            } else if (standardDeviation < 1.0) {
+            } else if (standardDeviation < 1.2) { // Adjusted for running
                 movementType = 'Running';
             } else {
                 movementType = 'Cycling or Other';
@@ -86,7 +87,7 @@
                     stepCount++;
                     document.getElementById('stepCount').textContent = 'Steps: ' + stepCount;
                     isAboveThreshold = true;
-                } else if (magnitude < stepThreshold) {
+                } else if (magnitude < stepThreshold - stepSensitivity) {
                     isAboveThreshold = false;
                 }
 
