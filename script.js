@@ -32,3 +32,23 @@ function updateNotifications() {
     showNotification('Movement Update', `Steps: ${stepCount}, Distance: ${totalDistance.toFixed(2)} meters`);
   }
 }
+// Function to send a message to the service worker
+function sendMessageToSW(message) {
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage(message);
+  }
+}
+
+// Example function to update notification
+function updateNotifications() {
+  if (Notification.permission === 'granted') {
+    sendMessageToSW({
+      type: 'UPDATE_NOTIFICATION',
+      title: 'Movement Update',
+      message: `Steps: ${stepCount}, Distance: ${totalDistance.toFixed(2)} meters`
+    });
+  }
+}
+
+// Send periodic updates or trigger based on events
+setInterval(updateNotifications, 6000); // Update every minute
