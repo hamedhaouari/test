@@ -80,11 +80,32 @@
             const acceleration = event.acceleration;
 
             if (acceleration) {
-                handlePosition()
-                const magnitude = Math.sqrt(acceleration.x ** 2 + acceleration.y ** 2 + acceleration.z ** 2);
+                navigator.geolocation.getCurrentPosition(handlePosition, (error) =>{
+                    statusElement.textContent = 'Error getting location: ' + error.message;
+                    }, {
+                    enableHighAccuracy: true
+                });
+                
+            }
+        }
+
+        // Function to handle geolocation event
+        function handlePosition(position) {
+             
+            if (lastPosition) {
+                const distance = calculateDistance(
+                    lastPosition.coords.latitude,
+                    lastPosition.coords.longitude,
+                    position.coords.latitude,
+                    position.coords.longitude
+                );
+
+                if (distance > distanceThreshold) {
+                    totalDistance += distance;
+                    const magnitude = Math.sqrt(acceleration.x ** 2 + acceleration.y ** 2 + acceleration.z ** 2);
 
                 // Detect steps based on acceleration magnitude
-                if (magnitude > stepThreshold && !isAboveThreshold & handlePosition()) {
+                if (magnitude > stepThreshold && !isAboveThreshold ) {
                     stepCount++;
                     document.getElementById('stepCount').textContent = 'Steps: ' + stepCount;
                     isAboveThreshold = true;
@@ -98,37 +119,19 @@
                 }
 
                 analyzeMovement(accelerationHistory);
-            }
-        }
-
-        // Function to handle geolocation event
-        function handlePosition() {
-            position = navigator.geolocation.getCurrentPosition()
-            if (lastPosition) {
-                const distance = calculateDistance(
-                    lastPosition.coords.latitude,
-                    lastPosition.coords.longitude,
-                    position.coords.latitude,
-                    position.coords.longitude
-                );
-
-                if (distance > distanceThreshold) {
-                    totalDistance += distance;
                     document.getElementById('distanceMoved').textContent = 'Distance Moved: ' + totalDistance.toFixed(2) + ' meters';
                 }
             }
 
             lastPosition = position;
-            return distance > 0.2;
+            
         }
 
         // Start listening to device motion and geolocation events
         window.addEventListener('devicemotion', handleMotionEvent);
 
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition( (error) => {
-                console.error('Error accessing location:', error);
-            });
+            
         } else {
             console.log('Geolocation is not supported by this browser.');
         }
