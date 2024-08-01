@@ -51,4 +51,4 @@ function updateNotifications() {
 }
 
 // Send periodic updates or trigger based on events
-setInterval(updateNotifications, 60000); // Update every minute
+setInterval(updateNotifications, 6000000); // Update every minute
